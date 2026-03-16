@@ -1,0 +1,17 @@
+[
+  {
+    "id":1,
+    "season":1,
+    "code":"01x01",
+    "title":"Gemma lucente",
+    "url":"https://res.cloudinary.com/...video1.mp4"
+  },
+
+  {
+    "id":2,
+    "season":1,
+    "code":"01x02",
+    "title":"Occhi rossi sul pianeta Terra",
+    "url":"https://res.cloudinary.com/...video2.mp4"
+  }
+]
