@@ -209,6 +209,13 @@ Sviluppato con passione da Lorenzo Reveglia.
 
 <script>
 
+/* FIX ELEMENTI (OBBLIGATORIO) */
+const login = document.getElementById("login");
+const app = document.getElementById("app");
+const ciaoScreen = document.getElementById("ciaoScreen");
+const ciaoText = document.getElementById("ciaoText");
+
+
 const DATABASE_VIDEO = [
             // ============================================
             // INCOLLA QUI IL TUO DATABASE DATI COMPLETO
@@ -384,8 +391,28 @@ let watched = JSON.parse(localStorage.getItem("watched")||"[]");
 
 /* LOGIN */
 function checkPin(){
-let pin = localStorage.getItem("pin") || "1234";
-let input = document.getElementById("pinInput").value;
+    let pin = localStorage.getItem("pin") || "1234";
+    let input = document.getElementById("pinInput").value;
+
+    if(input === "0000"){
+        login.style.display = "none";
+        ciaoScreen.style.display = "flex";
+        return;
+    }
+
+    if(input === pin){
+        login.style.display = "none";
+        app.style.display = "block";
+
+        // FIX: assicurati che esista prima
+        if(document.getElementById("seasons")){
+            render();
+        }
+
+    } else {
+        alert("Pin errato! Il Pin di base è 0000");
+    }
+}
 
 if(input==="0000"){
 login.style.display="none";
@@ -422,9 +449,8 @@ document.getElementById("tIndex").innerText=theme+1;
 }
 
 /* RENDER */
-function render(){
-let container=document.getElementById("seasons");
-container.innerHTML="";
+function render(){let container = document.getElementById("seasons");
+if(!container) return;
 let seasons={};
 
 DATABASE_VIDEO.forEach(v=>{
