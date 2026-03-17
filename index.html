@@ -1,54 +1,413 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>SU Streaming</title>
 
-<link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 
+<style>
+body {
+    margin:0;
+    font-family: system-ui;
+    background:#1a1a1a;
+    color:white;
+}
+
+.container {
+    max-width:500px;
+    margin:auto;
+    padding:15px;
+}
+
+.login-box {
+    margin-top:30vh;
+    text-align:center;
+}
+
+input {
+    padding:12px;
+    width:80%;
+    border-radius:10px;
+    border:none;
+    margin:10px;
+    text-align:center;
+}
+
+button {
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.season {
+    margin-top:10px;
+    padding:15px;
+    background:#333;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.episodes {
+    display:none;
+    background:#222;
+    padding:10px;
+    border-radius:10px;
+}
+
+.ep {
+    display:flex;
+    gap:10px;
+    padding:10px;
+    border-bottom:1px solid #444;
+}
+
+.check {
+    width:22px;
+    height:22px;
+    border:2px solid white;
+    border-radius:6px;
+}
+
+.check.on {
+    background:white;
+}
+
+video {
+    width:100%;
+    display:none;
+    margin-top:10px;
+}
+</style>
 </head>
 
 <body>
 
-<header>
+<div class="container">
 
-<h1>💎 SU Streaming</h1>
+<!-- LOGIN -->
+<div id="login">
+    <h1>SU Streaming</h1>
+    <p style="opacity:0.6">Inserisci PIN</p>
+    <input id="pin">
+    <br>
+    <button onclick="login()">Accedi</button>
+</div>
 
-<input
-id="search"
-placeholder="Cerca episodio..."
->
+<!-- APP -->
+<div id="app" style="display:none">
 
-</header>
+<button onclick="changeTheme()">🎨 colore</button>
+<button onclick="changePin()">🔒 pin</button>
 
-
-<main id="seasons"></main>
-
-
-<!-- PLAYER MODAL -->
-
-<div id="player-modal">
-
-<div class="player-box">
-
-<button id="close-player">✕</button>
-
-<video
-id="player"
-controls
-playsinline
-></video>
+<div id="seasons"></div>
 
 </div>
 
 </div>
 
+<script>
 
-<script src="app.js"></script>
+// 👉 INCOLLA QUI IL DATABASE COMPLETO
+const DATABASE_VIDEO = [
+            // ============================================
+            // INCOLLA QUI IL TUO DATABASE DATI COMPLETO
+            // ============================================ 
+            // STAGIONE 1
+            { name: "01x01 Gemma lucente - Gem Glow", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987419/Steven.Universe.01x01.Gemma.Lucente.Gem.Glow_jxffcb.mp4" },
+            { name: "01x02 Occhi rossi sul pianeta Terra - Laser Light Cannon", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078500/Steven.Universe.01x02.Occhi.Rossi.Sul.Pianeta.Terra.Laser.Li_vugrqh.mp4" },
+            { name: "01x03 Lo zainetto Cheeseburger - Cheeseburger Backpack", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772988513/Steven.Universe.01x03.Non.Tutte.Le.Ciambelle.Chees.Burger.Ba_u7epbl.mp4" },
+            { name: "01x04 Ora di colazione - Together Breakfast", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773250849/Steven.Universe.01x04.Ora.di.colazione.Together.Breakfast.23_jfewce.mp4" },
+            { name: "01x05 Ti piacciono le patatine? - Frybo", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078474/Steven.Universe.01x05.Ti.piacciono.le.patatine.Frybo.2345573_egtkbd.mp4" },
+            { name: "01x06 Gatto Steven - Cat Fingers", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078485/Steven.Universe.01x06.Gatto.Steven.Cat.Fingers.2345572.mkv.m_tosrtg.mp4" },
+            { name: "01x07 Amici della bolla - Bubble Buddies", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078488/Steven.Universe.01x07.Amici.Della.Bolla.Bubble.Buddies.23455_aoqzqi.mp4" },
+            { name: "01x08 La giostra del tè - Serious Steven", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772988503/Steven.Universe.01x08.La.Giostra.Del.T.Serious.Steven.234557_qdeht2.mp4" },
+            { name: "01x09 Wrestling - Tiger Millionaire", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078478/Steven.Universe.01x09.Wrestling.Tiger.Millionaire.2345571.mk_t3dj8o.mp4" },
+            { name: "01x10 Il leone rosa - Steven's Lion", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773078484/Steven.Universe.01x10.Il.Leone.Rosa.Steven.s.Lion.2345457.mk_i3xctr.mp4" },
+            { name: "01x11 Mania sala giochi - Arcade Mania", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773250825/Steven.Universe.01x11.Mania.Sala.Giochi.Arcade.Mania.2345458_ko1rrj.mp4" },
+            { name: "01x12 Lo scarabeo celeste - Giant Woman", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773314469/Steven.Universe.01x12.Lo.Scarabeo.Celeste.Giant.Woman_yigxpr.mp4" },
+            { name: "01x13 I compleanni non finiscono mai - So Many Birthdays", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773314521/Steven.Universe.01x13.I.Compleanni.Non.Finiscono.Mai.So.Many.birt_wimyuw.mp4" },
+            { name: "01x14 Amici per il muschio - Lars and the Cool Kids", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773314534/Steven.Universe.01x14.Amici.Per.Il.Muschio.Lars.And.The.Cool1_uw0eq3.mp4" },
+            { name: "01x15 L'uomo ranger - Onion Trade", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773314499/Steven.Universe.01x15.L.uomo.Ranger.Onion.Trade_qfx1qe.mp4" },
+            { name: "01x16 Olo lama - Steven the Sword Fighter", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773314503/Steven.Universe.01x16.Olo.lama.Steven.The.Sword.Fighter_okvgz1.mp4" },
+            { name: "01x17 Magico destino - Lion 2: The Movie", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773576764/Steven.Universe.01x17.Magico.Destino.Lion.2.The.Movie_zpldk0.mp4" },
+            { name: "01x18 L'unione fa la forza - Beach Party", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773576780/Steven.Universe.01x18.l.Unione.Fa.La.Forza.Beach.Party_okf56j.mp4" },
+            { name: "01x19 Un sogno da incubo - Rose's Room", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987490/Steven.Universe.01x19.Un.Sogno.Da.Incubo.Rose.s.Room.2345465_pw66sb.mp4" },
+            { name: "01x20 Steven allenamentore - Coach Steven", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773576781/Steven.Universe.01x20.Steven.Allenatore.Coach.Steven_ilpu69.mp4" },
+            { name: "01x21 Vittima di uno scherzo - Joking Victim", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773576767/Steven.Universe.01x21.Vittima.Di.Uno.Scherzo.Joking.Victim_ofiqoy.mp4" },
+            { name: "01x22 Steven e gli Stevens - Steven and the Stevens", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601439/Steven.Universe.01x22.Steven.E.Gli.Stevens.Steven.And.The.S_egxoxq.mp4" },
+            { name: "01x23 Un mostro per amico - Monster Buddies", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772988479/Steven.Universe.01x23.Un.Mostro.Per.Amico.Monster.Buddies.23_xyemxb.mp4" },
+            { name: "01x24 Una lacrima sul viso - An Indirect Kiss", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601428/Steven.Universe.01x24.Una.Lacrima.Sul.Viso.An.Indirect.Kiss_ai2rk2.mp4" },
+            { name: "01x25 Lapislazzuli parte 1 - Mirror Gem", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601426/Steven.Universe.01x25.Lapislazzuli.Parte.1.Mirror.Gem_e4hyds.mp4" },
+            { name: "01x26 Lapislazzuli parte 2 - Ocean Gem", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772988495/Steven.Universe.01x26.Lapislazzuli.Parte.2.Ocean.Gem.2345473_zxxwpl.mp4" },
+            { name: "01x27 Le bugie hanno le gambe rotte - House Guest", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987416/Steven.Universe.01x27.Le.Bugie.Hanno.Le.Gambe.Rotte.House.Gu_swcp7u.mp4" },
+            { name: "01x28 Viaggio nello Spazio - Space Race", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601418/Steven.Universe.01x28.Viaggio.Nello.Spazio.Space.Race_flirsc.mp4" },
+            { name: "01x29 La squadra segreta - Secret Team", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601397/Steven.Universe.01x29.La.Squadra.Segreta.Secret.Team_ako88z.mp4" },
+            { name: "01x30 Avventura sull'isola - Island Adventure", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601409/Steven.Universe.01x30.Avventura.Sull.Isola.Island.Adventure_djh4an.mp4" },
+            { name: "01x31 Le stranezze di Beach City - Keep Beach City Weird", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601410/Steven.Universe.01x31.Le.Stranezze.Di.Beach.City.Keep.Beach_z0joys.mp4" },
+            { name: "01x32 La famiglia nucleare - Fusion Cuisine", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060098/Steven.Universe.01x32.La.Famiglia.Nucleare.Fusion.Cuisine.23_tlituc.mp4" },
+            { name: "01x33 L'universo di Garnet - Garnet's Universe", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773601437/Steven.Universe.01x33.L.Universo.Di.Garnet.Garnet.s.Universe1_u8jr5x.mp4" },
+            { name: "01x34 Cocomerino il cocomero bambino - Watermelon Steven", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987528/Steven.Universe.01x34.Cocomerino.Il.Cocomero.Bambino.Waterme_bka5cy.mp4" },
+            { name: "01x35 La criniera del leone - Lion 3: Straight to Video", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773608838/Steven.Universe.01x35.La.Criniera.Del.Leone.Lion.3.Straight._fghhl0.mp4" },
+            { name: "01x36 Oltre il flusso - Warp Tour", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773608793/Steven.Universe.01x36.Oltre.Il.Flusso.Warp.Tour.2345483.mkv._tohuax.mp4" },
+            { name: "01x37 Due per uno - Alone Together", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773608760/Steven.Universe.01x37.Due.Per.Uno.Alone.Together.2345484.mkv_vepiry.mp4" },
+            { name: "01x38 Il Test - The Test", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987305/Steven.Universe.01x38.Il.Test.The.Test.2345485.mkv.mp4_at_St_bdoiwl.mp4" },
+            { name: "01x39 Future visioni - Future Vision", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773608791/Steven.Universe.01x39.Future.Visioni.Future.Vision.2345486.m_n8rwfx.mp4" },
+            { name: "01x40 Vagabondi - On the Run", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773608770/Steven.Universe.01x40.Vagabondi.On.The.Run.2345487.mkv.mp4_a_wtbfrc.mp4" },
+            { name: "01x41 Horror party - Horror Club", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060183/Steven.Universe.01x41.Horror.Party.Horror.Club.2345488.mkv.m_j6pjkt.mp4" },
+            { name: "01x42 Visioni dal futuro - Winter Forecast", url: "" },
+            { name: "01x43 Capodanno - Maximum Capacity", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987518/Steven.Universe.01x43.Capodanno.Maximum.Capacity.2345490.mkv_r5wmcl.mp4" },
+            { name: "01x44 Invasione aliena - Marble Madness", url: "" },
+            { name: "01x45 Il fodero di Rose - Rose's Scabbard", url: "" },
+            { name: "01x46 Libro aperto - Open Book", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987412/Steven.Universe.01x46.Libro.Aperto.Open.Book.2345493.mkv.mp4_znmx0e.mp4" },
+            { name: "01x47 Padri e figli - Shirt Club", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772988467/Steven.Universe.01x47.Padri.E.Figli.Shirt.Club.2345494.mkv.m_kvtmr0.mp4" },
+            { name: "01x48 Il ritorno - The Return", url: "" },
+            { name: "01x49 Il messaggio - The Message", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987529/Steven.Universe.01x49.Il.Messaggio.The.Message.2345495.mkv.m_zhmlwh.mp4" },
+            { name: "01x50 Bugie professionali - Political Power", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772987400/Steven.Universe.01x50.Bugie.Professionali.Political.Power.23_fwleof.mp4" },
+            { name: "01x51 Capitolo finale - Jail Break", url: "" },
+            { name: "01x52 Una storia per Steven - Story for Steven", url: "" },
+
+            // STAGIONE 2 -finita
+            { name: "02x01 Protezione - Full Disclosure", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773089727/Steven.Universe.02x01.Protezione.Full.Disclosure.2345497_fu5uyd.mp4" },
+            { name: "02x02 Tra riposo e doveri - Joy Ride", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773089727/Steven.Universe.02x02.Tra.Riposo.E.Doveri.Joy.Ride.2345498_r0uzhr.mp4" },
+            { name: "02x03 Grandpa Universe - Say Uncle", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773089717/Steven.Universe.02x03.Grandpa.Universe.Say.Uncle.2345499_jnspv7.mp4" },
+            { name: "02x04 Il postino innamorato - Love Letters", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773089729/Steven.Universe.02x04.Il.Postino.Innamorato.Love.Letters.23_yz07rk.mp4" },
+            { name: "02x05 Il processo di Rigenerazione - Reformed", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773089708/Steven.Universe.02x05.Il.Processo.Di.Rigenerazione.Reformed_tx6kvc.mp4" },
+            { name: "02x06 Lezioni di combattimento - Sworn to the Sword", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773146966/Steven.Universe.02x06.Lezioni.Di.Combattimento.Sworn.To.The_cydelw.mp4" },
+            { name: "02x07 Il documentario - Rising Tides, Crashing Skies", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060724/Steven.Universe.02x07.Il.Documentario.Rising.Tides.Crashing._bstnnk.mp4" },
+            { name: "02x08 Restare uniti - Keeping It Together", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060644/Steven.Universe.02x08.Restare.Uniti.Keeping.It.Together.2345_eamcnx.mp4" },
+            { name: "02x09 Dobbiamo parlare - We Need to Talk", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773146955/Steven.Universe.02x09.Dobbiamo.Parlare.We.Need.To.Talk.2345_hjsu1h.mp4" },
+            { name: "02x10 Sogno Rivelatore - Chille Tid", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060587/Steven.Universe.02x10.Sogno.Rivelatore.Chille.Tid.2345506.mk_cmiloe.mp4" },
+            { name: "02x11 Una nuova Fusione - Cry for Help", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060615/Steven.Universe.02x11.Una.Nuova.Fusione.Cry.For.Help.2345507_sbcmsz.mp4" },
+            { name: "02x12 Una vacanza turbolenta - Keystone Motel", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773146932/Steven.Universe.02x12.Una.Vacanza.Turbolenta.Keystone.Motel_jw6wgu.mp4" },
+            { name: "02x13 Bimbo bizzarro - Onion Friend", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060630/Steven.Universe.02x13.Bimbo.Bizzarro.Onion.Friend.2345509.mk_cne2lh.mp4" },
+            { name: "02x14 Si recita - Historical Friction", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060671/Steven.Universe.02x14.Si.Recita.Historical.Friction.2345510._tqkrmc.mp4" },
+            { name: "02x15 Amicizia - Friend Ship", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773146946/Steven.Universe.02x15.Amicizia.Friend.Ship_e69n7h.mp4" },
+            { name: "02x16 Questione di fiducia - Nightmare Hospital", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060647/Steven.Universe.02x16.Questione.Di.Fiducia.Nightmare.Hospita_wvtdgd.mp4" },
+            { name: "02x17 La cattura - Catch and Release", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773146945/Steven.Universe.02x17.La.Cattura.Catch.And.Release_stf7qv.mp4" },
+            { name: "02x18 La canzone di Sadie - Sadie's Song", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060661/Steven.Universe.02x18.La.Canzone.Di.Sadie.Sadie.s.Song.23455_yueook.mp4" },
+            { name: "02x19 La verità sul Grappolo - When It Rains", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060666/Steven.Universe.02x19.La.Verita.Sul.Grappolo.When.It.Rains.2_wjb1fv.mp4" },
+            { name: "02x20 Sfida tra Gemme - Back to the Barn", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773250856/Steven.Universe.02x20.Sfida.Tra.Gemme.Back.To.The.Barn.23455_mhmj7u.mp4" },
+            { name: "02x21 La scoperta dei sentimenti - Too Far", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060622/Steven.Universe.02x21.La.Scoperta.Dei.Sentimenti.Too.Far.234_xdgpaz.mp4" },
+            { name: "02x22 La risposta - The Answer", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773250837/Steven.Universe.02x22.La.Risposta.The.Answer.2345517.mkv.mp4_ptii4l.mp4" },
+            { name: "02x23 La base Lunare - It Could've Been Great", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773250828/Steven.Universe.02x23.La.Base.Lunare.It.Could.Have.Been.Grea_fahvg5.mp4" },
+            { name: "02x24 Il compleanno di Steven - Steven's Birthday", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060652/Steven.Universe.02x24.Il.Compleanno.Di.Steven.Steven.s.Birth_xqb7kx.mp4" },
+            { name: "02x25 Una nuova Crystal Gem - Message Received", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060639/Steven.Universe.02x25.Una.Nuova.Crystal.Gem.Message.Received_ffdfrb.mp4" },
+            { name: "02x26 Diario di un incontro - Log Date 7 15 2", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773060647/Steven.Universe.02x26.Diario.Di.Un.Incontro.Log.Date.7.15.2._ymy04k.mp4" },
+
+            // STAGIONE 3 -finita
+            { name: "03x01 L'isola dei super cocomeri - Super Watermelon Island", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772970695/Steven.Universe.03x01.L.Isola.Dei.Super.Cocomeri.Super.Water_bpeolj.mp4" },
+            { name: "03x02 Al centro della Terra - Gem Drill", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315543/Steven.Universe.03x02.Al.Centro.Della.Terra.Gem.Drill_o21ydf.mp4" },
+            { name: "03x03 Tutto cambia - Same Old World", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1772970327/Steven.Universe.03x03.Tutto.Cambia.Same.Old.World.2345524.mk_vkxjpv.mp4" },
+            { name: "03x04 Dissapori tra gemme - Barn Mates", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773062196/Steven.Universe.03x04.Dissapori.Tra.Gemme.Barn.Mates.2345525_stytkl.mp4" },
+            { name: "03x05 Umani contro Rubini - Hit the Diamond", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315524/Steven.Universe.03x05.Umani.Contro.Rubini.Hit.The.Diamond_il2pwr.mp4" },
+            { name: "03x06 Un potere nuovo - Steven Floats", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315243/Steven.Universe.03x06.Un.Potere.Nuovo.Steven.Floats.2345527._nvk14r.mp4" },
+            { name: "03x07 Da padre a figlio - Drop Beat Dad", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315288/Steven.Universe.03x07.Da.Padre.A.Figlio.Drop.Beat.Dad.234552_ggremy.mp4" },
+            { name: "03x08 Il signor Greg - Mr. Greg", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510771/Steven.Universe.03x08.Il.Signor.Greg.Mr.Greg.2345529.mkv.mp4_q3u7jf.mp4" },
+            { name: "03x09 Troppo bassi per salire - Too Short to Ride", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315244/Steven.Universe.03x09.Troppo.Bassi.Per.Salire.Too.Short.To.R_v2bk9a.mp4" },
+            { name: "03x10 Scambio di persona - The New Lars", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773062197/Steven.Universe.03x10.Scambio.Di.Persona.The.New.Lars.234553_nnccdm.mp4" },
+            { name: "03x11 Corsa a Beach City - Beach City Drift", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773062159/Steven.Universe.03x11.Corsa.A.Beach.City.Beach.City.Drift.23_xxzqfu.mp4" },
+            { name: "03x12 Il ristorante di Steven - Restaurant Wars", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773062225/Steven.Universe.03x12.Il.Ristorante.Di.Steven.Restaurant.War_nebdl7.mp4" },
+            { name: "03x13 Kiki consegne a domicilio - Kiki's Pizza Delivery Service", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510772/Steven.Universe.03x13.Kiki.Consegne.A.Domicilio.Kiki.s.Pizza_zbgfux.mp4" },
+            { name: "03x14 Un' amica ritrovata - Monster Reunion", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773062139/Steven.Universe.03x14.Un.Amica.Ritrovata.Monster.Reunion.234_aqnni0.mp4" },
+            { name: "03x15 Gita in barca - Alone at Sea", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510747/Steven.Universe.03x15.Gita.In.Barca.Alone.at.Sea.mkv_qqqud5.mp4" },
+            { name: "03x16 Il Greg sitter - Greg the sitter", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510787/Steven.Universe.03x16.Greg.Il.sitter.Greg.The.sitter.2345537_uenavn.mp4" },
+            { name: "03x17 La prima missione di Connie - Gem Hunt", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510765/Steven.Universe.03x17.La.Prima.Missione.Di.Connie.Gem.Hunt.2_ukjrnn.mp4" },
+            { name: "03x18 Pausa dagli allenamenti - Crack the Whip", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510764/Steven.Universe.03x18.Pausa.Dagli.Allenamenti.Crack.The.Whip_zxuzaw.mp4" },
+            { name: "03x19 Steven contro Ametista - Steven vs Amethyst", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510812/Steven.Universe.03x19.Steven.Contro.Ametista.Steven.Vs.Ameth_jag7kn.mp4" },
+            { name: "03x20 Bismuth: una vecchia Crystal Gem (Parte 1) - Bismuth (Part 1)", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773514887/Steven.Universe.03x20.Bismuth.Una.Vecchia.Crystal.Gem.Bism_vfviht.mp4" },
+            { name: "03x21 Bismuth: una vecchia Crystal Gem (Parte 2) - Bismuth (Part 2)", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773514829/Steven.Universe.03x21.Bismuth.Una.Vecchia.Crystal.Gem.Bis_w6vkqn.mp4" },
+            { name: "03x22 Beta - Beta", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510775/Steven.Universe.03x22.Beta.Beta.2345543.mkv.mp4_at_Streamtap_gdfmna.mp4" },
+            { name: "03x23 Una nemica Corrotta - Earthlings", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773570308/Steven.Universe.03x23.Una.Nemica.Corrotta.Earthlings_nc1qvt.mp4" },
+            { name: "03x24 Ritorno sulla Luna - Back to the Moon", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773315277/Steven.Universe.03x24.Ritorno.Sulla.Luna.Back.To.The.Moon.23_w6nv24.mp4" },
+            { name: "03x25 Nella bolla - Bubbled", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773510757/Steven.Universe.03x25.Nella.Bolla.Bubbled.2345546.mkv.mp4_at_is4bnl.mp4" },
+
+            // STAGIONE 4
+            { name: "04x01 Il ragazzo del giardino d'infanzia - The Kindergarten Kid", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091199/Steven.Universe.04x01.Il.Ragazzo.Del.Giardino.D.Infanzia.The_gb5xuv.mp4" },
+            { name: "04x02 Conosci la tua fusione - Know Your Fusion", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091215/Steven.Universe.04x02.Conosci.la.tua.Fusione.Know.Your.Fusio_hbt0zv.mp4" },
+            { name: "04x03 Il diario di Buddy - Buddy's Book", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091115/Steven.Universe.04x03.Il.Diario.Di.Buddy.Buddys.Book.2345549_w6jahs.mp4" },
+            { name: "04x04 Meditazione guidata - Mindful Education", url: "" },
+            { name: "04x05 Prevedere il Futuro - Future Boy Zoltron", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091199/Steven.Universe.04x05.Prevedere.Il.Futuro.Future.Boy.Zoltron_ujlo7a.mp4" },
+            { name: "04x06 L'ultima cena - Last One Out of Beach City", url: "" },
+            { name: "04x07 La gang della cipolla - Onion Gang", url: "" },
+            { name: "04x08 Gem Harvest (Parte 1) - Gem Harvest (Part 1)", url: "" },
+            { name: "04x09 Gem Harvest (Parte 2) - Gem Harvest (Part 2)", url: "" },
+            { name: "04x10 Il sogno di Steven - Steven's Dream", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091130/Steven.Universe.04x10.Il.Sogno.di.Steven.Steven.s.Dream.2345_jcbvso.mp4" },
+            { name: "04x11 Tre gemme e un bebè - Three Gems and a Baby", url: "" },
+            { name: "04x12 Avventura nello spazio - Adventures in Light Distortion", url: "" },
+            { name: "04x13 Furto di Gemme - Gem Heist", url: "" },
+            { name: "04x14 Lo zoo degli umani - The Zoo", url: "" },
+            { name: "04x15 Niente di nuovo - That Will Be All", url: "" },
+            { name: "04x16 Madre e figlio - Storm in the Room", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091160/Steven.Universe.04x16.Madre.e.Figlio.Storm.in.the.Room.23455_aqtjv7.mp4" },
+            { name: "04x17 Un alleato invadente - Rocknaldo", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091179/Steven.Universe.04x17.Un.Alleato.Invadente.Rocknaldo.2345562_ilhcjz.mp4" },
+            { name: "04x18 Le nuove Crystal Gems - The New Crystal Gems", url: "" },
+            { name: "04x19 Tigre filantropa - Tiger Philanthropist", url: "" },
+            { name: "04x20 Un posto per Ruby - Room for Ruby", url: "" },
+            { name: "04x21 Inseguimento notturno - Doug Out", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091154/Steven.Universe.04x21.Inseguimento.Notturno.Doug.Out.2345566_yhuebx.mp4" },
+            { name: "04x22 Il dolce di Lars - The Good Lars", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091147/Steven.Universe.04x22.Il.Dolce.di.Lars.The.Good.Lars.2345567_llfuhy.mp4" },
+            { name: "04x23 Amici scomparsi - Are You My Dad?", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091199/Steven.Universe.04x23.Amici.Scomparsi.Are.You.My.Dad.2345568_vx50pk.mp4" },
+            { name: "04x24 La scelta - I Am My Mom", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773091140/Steven.Universe.04x24.La.Scelta.I.Am.My.Mom.2345569.mkv.mp4_ue9ndc.mp4" },
+            { name: "04x25 Leone 4: finale alternativo - Lion 4: Alternate Ending", url: "" },
+
+            // STAGIONE 5
+            { name: "05x01 In trappola - Stuck Together", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147480/Steven.Universe.05x01.In.Trappola.Stuck.Together.2345579.mkv_c3mpbo.mp4" },
+            { name: "05x02 Il processo - The Trial", url: "" },
+            { name: "05x03 Le gemme difettose - Off Colors", url: "" },
+            { name: "05x04 Ritorno sulla Terra - Lars' Head", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147463/Steven.Universe.05x04.Ritorno.sulla.Terra.Lars.Head.2345582._qorqzx.mp4" },
+            { name: "05x05 Nuove elezioni in città - Dewey Wins", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147473/Steven.Universe.05x05.Nuove.Elezioni.in.Citta.Dewey.Wins.234_shcmwi.mp4" },
+            { name: "05x06 Steven va in vacanza - Gemcation", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147491/Steven.Universe.05x06.Steven.va.in.Vacanza.Gemcation.2345583_dgtq29.mp4" },
+            { name: "05x07 Il fienile vola - Rasing the Barn", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147494/Steven.Universe.05x07.Il.Fienile.Vola.Via.Rasing.the.Barn.23_eb59hs.mp4" },
+            { name: "05x08 Vita da gemme - Sadie Killer", url: "" },
+            { name: "05x09 Una lacrima sul viso - Lars of the Stars", url: "" },
+            { name: "05x10 La festa di Kevin - Kevin Party", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147486/Steven.Universe.05x10.La.Festa.di.Kevin.Kevin.Party.2345587._ohdrbb.mp4" },
+            { name: "05x11 Il viaggio di ritorno - Jungle Moon", url: "" },
+            { name: "05x12 Il Grande Show - The Big Show", url: "" },
+            { name: "05x13 Tua madre e la mia - Your Mother and Mine", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147481/Steven.Universe.05x13.Tua.Madre.e.la.Mia.Your.Mother.and.Min_aw06cu.mp4" },
+            { name: "05x14 Made of Honor - Made of Honor", url: "" },
+            { name: "05x15 Adesso ci separiamo - Now We're Only Falling Apart", url: "" },
+            { name: "05x16 Le storie di Beach City - Letters to Lars", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147469/Steven.Universe.05x16.Le.Storie.di.Beach.City.Letters.to.Lar_hevhag.mp4" },
+            { name: "05x17 Qual è il tuo problema? - What's Your Problem?", url: "" },
+            { name: "05x18 Una Rosa senza spine - A Single Pale Rose", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147485/Steven.Universe.05x18.Una.Rosa.senza.Spine.A.Single.Pale.Ros_gm843h.mp4" },
+            { name: "05x19 Riunione (Parte 1) - Reunited (Part 1)", url: "" },
+            { name: "05x20 Riunione (Parte 2) - Reunited (Part 2)", url: "" },
+            { name: "05x21 Legs From Here to Homeworld - Legs From Here to Homeworld", url: "" },
+            { name: "05x22 Familiar - Familiar", url: "" },
+            { name: "05x23 Together Alone - Together Alone", url: "" },
+            { name: "05x24 Escapism - Escapism", url: "" },
+            { name: "05x25 Il ruolo di Rosa - Familiar", url: "https://res.cloudinary.com/dcsvok2jp/video/upload/v1773147493/Steven.Universe.05x25.Il.ruolo.di.Rosa.Familiar.2345602.mkv._bsj9xi.mp4" },
+            { name: "05x26 QUALCOSA", url: "" },
+            { name: "05x27 Di nuovo insieme - Back to the Kindergarten", url: "" },
+            { name: "05x28 Change Your Mind (Speciale Finale) - Change Your Mind", url: "" }
+];
+
+// stato
+let watched = JSON.parse(localStorage.getItem("watched")) || [];
+
+// login
+function login(){
+    let p = document.getElementById("pin").value;
+
+    if(p==="0000"){
+        alert("Ciao 😎");
+        return;
+    }
+
+    if(p === (localStorage.getItem("pin") || "1234")){
+        document.getElementById("login").style.display="none";
+        document.getElementById("app").style.display="block";
+        render();
+    } else {
+        alert("PIN errato! Il PIN base è 0000");
+    }
+}
+
+// render
+function render(){
+    let div = document.getElementById("seasons");
+    div.innerHTML="";
+
+    let stagioni = ["01","02","03","04","05"];
+
+    stagioni.forEach(s=>{
+        let eps = DATABASE_VIDEO.filter(v=>v.name.startsWith(s+"x"));
+
+        let done = eps.filter(e=>watched.includes(e.name)).length;
+        let perc = Math.round((done/eps.length)*100);
+
+        let box = document.createElement("div");
+        box.className="season";
+
+        box.innerHTML = `
+        <div>📂 Stagione ${s} (${done}/${eps.length})</div>
+        <div style="height:6px;background:#555;margin-top:5px;border-radius:10px;">
+            <div style="width:${perc}%;height:100%;background:white;border-radius:10px;"></div>
+        </div>
+        `;
+
+        let list = document.createElement("div");
+        list.className="episodes";
+
+        box.onclick=()=>{
+            list.style.display = list.style.display==="block"?"none":"block";
+        };
+
+        eps.forEach(e=>{
+            let parts = e.name.split(" - ");
+
+            let el = document.createElement("div");
+            el.className="ep";
+
+            el.innerHTML = `
+            <div class="check ${watched.includes(e.name)?"on":""}" onclick="toggle(event,'${e.name}')"></div>
+            <div onclick="play(this)">
+                <div style="opacity:0.6">🎬 ${parts[0]}</div>
+                <div>${parts[0].split(' ').slice(1).join(' ')}</div>
+                <div style="font-size:12px;opacity:0.5">${parts[1]}</div>
+                <video src="${e.url}" controls></video>
+            </div>
+            `;
+
+            list.appendChild(el);
+        });
+
+        div.appendChild(box);
+        div.appendChild(list);
+    });
+}
+
+// toggle visto
+function toggle(ev,name){
+    ev.stopPropagation();
+
+    let i = watched.indexOf(name);
+
+    if(i>-1) watched.splice(i,1);
+    else watched.push(name);
+
+    localStorage.setItem("watched",JSON.stringify(watched));
+    render();
+}
+
+// play + autoplay
+function play(el){
+    let v = el.querySelector("video");
+
+    document.querySelectorAll("video").forEach(x=>{
+        x.pause();
+        x.style.display="none";
+    });
+
+    v.style.display="block";
+    v.play();
+
+    v.onended = ()=>{
+        let all = Array.from(document.querySelectorAll("video"));
+        let i = all.indexOf(v);
+        if(all[i+1]) all[i+1].play();
+    }
+}
+
+// tema
+let theme = localStorage.getItem("theme") || 0;
+changeTheme();
+
+function changeTheme(){
+    let colors = ["#1a1a1a","#2d1b4b","#063344","#2e1065"];
+    theme = (parseInt(theme)+1)%colors.length;
+    document.body.style.background = colors[theme];
+    localStorage.setItem("theme",theme);
+}
+
+// pin
+function changePin(){
+    let p = prompt("Nuovo PIN");
+    if(p==="0000") return alert("Non valido");
+    if(p) localStorage.setItem("pin",p);
+}
+
+</script>
 
 </body>
 </html>
