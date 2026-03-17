@@ -403,12 +403,7 @@ function checkPin(){
     if(input === pin){
         login.style.display = "none";
         app.style.display = "block";
-
-        // FIX: assicurati che esista prima
-        if(document.getElementById("seasons")){
-            render();
-        }
-
+        render();
     } else {
         alert("Pin errato! Il Pin di base è 0000");
     }
@@ -449,8 +444,12 @@ document.getElementById("tIndex").innerText=theme+1;
 }
 
 /* RENDER */
-function render(){let container = document.getElementById("seasons");
+function render(){
+let container = document.getElementById("seasons");
 if(!container) return;
+
+container.innerHTML = ""; // 🔥 FONDAMENTALE
+
 let seasons={};
 
 DATABASE_VIDEO.forEach(v=>{
