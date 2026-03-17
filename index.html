@@ -6,111 +6,159 @@
 <title>SU Streaming</title>
 
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="https://res.cloudinary.com/dcsvok2jp/image/upload/v1773007380/Logo_2_nmufb2.jpg">
 
 <style>
-body {
+body{
     margin:0;
-    font-family: system-ui;
-    background:#1a1a1a;
+    font-family:sans-serif;
+    background:#0f2f2c;
     color:white;
 }
 
-.container {
-    max-width:500px;
-    margin:auto;
-    padding:15px;
+/* LOGIN */
+#login{
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
-.login-box {
-    margin-top:30vh;
+.login-box{
+    background:#2c2c2c;
+    padding:40px;
+    border-radius:20px;
     text-align:center;
+    width:300px;
 }
 
-input {
-    padding:12px;
-    width:80%;
+.login-box h1{
+    font-size:32px;
+}
+
+input{
+    width:100%;
+    padding:15px;
     border-radius:10px;
     border:none;
-    margin:10px;
+    margin-top:20px;
     text-align:center;
 }
 
-button {
-    padding:12px 25px;
+button{
+    margin-top:15px;
+    padding:10px 20px;
     border:none;
     border-radius:10px;
     cursor:pointer;
 }
 
-.season {
+/* MAIN */
+#app{display:none;padding:20px;}
+
+.card{
+    background:#2a7d75;
+    padding:20px;
+    border-radius:20px;
+    margin-bottom:20px;
+}
+
+.season{
+    background:#2a7d75;
+    padding:15px;
+    border-radius:15px;
     margin-top:10px;
-    padding:15px;
-    background:#333;
-    border-radius:12px;
     cursor:pointer;
 }
 
-.episodes {
-    display:none;
-    background:#222;
+.episode{
     padding:10px;
-    border-radius:10px;
-}
-
-.ep {
     display:flex;
     gap:10px;
-    padding:10px;
-    border-bottom:1px solid #444;
+    align-items:flex-start;
+    border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-.check {
-    width:22px;
-    height:22px;
-    border:2px solid white;
-    border-radius:6px;
+.ep-label{
+    color:gray;
+    min-width:60px;
 }
 
-.check.on {
-    background:white;
+.title-en{
+    font-size:12px;
+    opacity:0.5;
 }
 
-video {
+video{
     width:100%;
-    display:none;
     margin-top:10px;
+    display:none;
 }
+
+.checkbox{
+    width:20px;
+    height:20px;
+}
+
+#ciaoScreen{
+    display:none;
+    height:100vh;
+    align-items:center;
+    justify-content:center;
+    font-size:50px;
+}
+
+/* TEMI */
+.theme0{background:#0f2f2c;}
+.theme1{background:#2c0f2f;}
+.theme2{background:#2f2f0f;}
 </style>
 </head>
 
-<body>
-
-<div class="container">
+<body class="theme0">
 
 <!-- LOGIN -->
 <div id="login">
-    <h1>SU Streaming</h1>
-    <p style="opacity:0.6">Inserisci PIN</p>
-    <input id="pin">
-    <br>
-    <button onclick="login()">Accedi</button>
+    <div class="login-box">
+        <h1>SU Streaming</h1>
+        <input id="pinInput" type="password" placeholder="Inserisci PIN">
+        <button onclick="checkPin()">ACCEDI</button>
+    </div>
+</div>
+
+<!-- SCHERMATA TROLL -->
+<div id="ciaoScreen">
+    <div>
+        <button onclick="showCiao()">Premi qui</button>
+        <h1 id="ciaoText" style="display:none;">CIAO</h1>
+    </div>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app">
 
-<button onclick="changeTheme()">🎨 colore</button>
-<button onclick="changePin()">🔒 pin</button>
+<button onclick="changePin()">PIN</button>
+<button onclick="changeTheme()">COLORE</button>
+
+<div class="card">
+<h2>Steven Universe: The Complete Collection ✨</h2>
+<p>
+Questa web app nasce dal desiderio di raccogliere in un unico posto l'intero universo creato da Rebecca Sugar.<br><br>
+💎 Tutte le stagioni della serie originale<br>
+🎬 Steven Universe: Il Film<br>
+🌟 Steven Universe Future<br><br>
+Nota dello sviluppatore: primo progetto, in continuo miglioramento.<br>
+Sviluppato con passione da Lorenzo Reveglia.
+</p>
+</div>
 
 <div id="seasons"></div>
 
 </div>
 
-</div>
-
 <script>
 
-// 👉 INCOLLA QUI IL DATABASE COMPLETO
+/* DATABASE (incolla qui il tuo completo) */
 const DATABASE_VIDEO = [
             // ============================================
             // INCOLLA QUI IL TUO DATABASE DATI COMPLETO
@@ -282,133 +330,131 @@ const DATABASE_VIDEO = [
             { name: "05x28 Change Your Mind (Speciale Finale) - Change Your Mind", url: "" }
 ];
 
-// stato
-let watched = JSON.parse(localStorage.getItem("watched")) || [];
+let watched = JSON.parse(localStorage.getItem("watched")||"[]");
 
-// login
-function login(){
-    let p = document.getElementById("pin").value;
+/* LOGIN */
+function checkPin(){
+let pin = localStorage.getItem("pin") || "1234";
+let input = document.getElementById("pinInput").value;
 
-    if(p==="0000"){
-        alert("Ciao 😎");
-        return;
-    }
-
-    if(p === (localStorage.getItem("pin") || "1234")){
-        document.getElementById("login").style.display="none";
-        document.getElementById("app").style.display="block";
-        render();
-    } else {
-        alert("PIN errato! Il PIN base è 0000");
-    }
+if(input==="0000"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("ciaoScreen").style.display="flex";
+    return;
 }
 
-// render
-function render(){
-    let div = document.getElementById("seasons");
-    div.innerHTML="";
-
-    let stagioni = ["01","02","03","04","05"];
-
-    stagioni.forEach(s=>{
-        let eps = DATABASE_VIDEO.filter(v=>v.name.startsWith(s+"x"));
-
-        let done = eps.filter(e=>watched.includes(e.name)).length;
-        let perc = Math.round((done/eps.length)*100);
-
-        let box = document.createElement("div");
-        box.className="season";
-
-        box.innerHTML = `
-        <div>📂 Stagione ${s} (${done}/${eps.length})</div>
-        <div style="height:6px;background:#555;margin-top:5px;border-radius:10px;">
-            <div style="width:${perc}%;height:100%;background:white;border-radius:10px;"></div>
-        </div>
-        `;
-
-        let list = document.createElement("div");
-        list.className="episodes";
-
-        box.onclick=()=>{
-            list.style.display = list.style.display==="block"?"none":"block";
-        };
-
-        eps.forEach(e=>{
-            let parts = e.name.split(" - ");
-
-            let el = document.createElement("div");
-            el.className="ep";
-
-            el.innerHTML = `
-            <div class="check ${watched.includes(e.name)?"on":""}" onclick="toggle(event,'${e.name}')"></div>
-            <div onclick="play(this)">
-                <div style="opacity:0.6">🎬 ${parts[0]}</div>
-                <div>${parts[0].split(' ').slice(1).join(' ')}</div>
-                <div style="font-size:12px;opacity:0.5">${parts[1]}</div>
-                <video src="${e.url}" controls></video>
-            </div>
-            `;
-
-            list.appendChild(el);
-        });
-
-        div.appendChild(box);
-        div.appendChild(list);
-    });
-}
-
-// toggle visto
-function toggle(ev,name){
-    ev.stopPropagation();
-
-    let i = watched.indexOf(name);
-
-    if(i>-1) watched.splice(i,1);
-    else watched.push(name);
-
-    localStorage.setItem("watched",JSON.stringify(watched));
+if(input===pin){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
     render();
+}else{
+    alert("Pin errato! Il Pin di base è 0000");
+}
 }
 
-// play + autoplay
-function play(el){
-    let v = el.querySelector("video");
-
-    document.querySelectorAll("video").forEach(x=>{
-        x.pause();
-        x.style.display="none";
-    });
-
-    v.style.display="block";
-    v.play();
-
-    v.onended = ()=>{
-        let all = Array.from(document.querySelectorAll("video"));
-        let i = all.indexOf(v);
-        if(all[i+1]) all[i+1].play();
-    }
+/* CIAO */
+function showCiao(){
+let el=document.getElementById("ciaoText");
+el.style.display="block";
+setTimeout(()=>el.style.display="none",2000);
 }
 
-// tema
-let theme = localStorage.getItem("theme") || 0;
-changeTheme();
-
-function changeTheme(){
-    let colors = ["#1a1a1a","#2d1b4b","#063344","#2e1065"];
-    theme = (parseInt(theme)+1)%colors.length;
-    document.body.style.background = colors[theme];
-    localStorage.setItem("theme",theme);
-}
-
-// pin
+/* PIN */
 function changePin(){
-    let p = prompt("Nuovo PIN");
-    if(p==="0000") return alert("Non valido");
-    if(p) localStorage.setItem("pin",p);
+let p=prompt("Nuovo PIN");
+if(p==="0000"){alert("Pin non valido! Pin di sistema!");return;}
+if(p){localStorage.setItem("pin",p);alert("Pin aggiornato");}
 }
 
+/* TEMI */
+let theme=0;
+function changeTheme(){
+theme=(theme+1)%3;
+document.body.className="theme"+theme;
+}
+
+/* RENDER */
+function render(){
+let container=document.getElementById("seasons");
+container.innerHTML="";
+
+let seasons={};
+
+DATABASE_VIDEO.forEach(v=>{
+let s=v.name.split("x")[0];
+if(!seasons[s])seasons[s]=[];
+seasons[s].push(v);
+});
+
+Object.keys(seasons).forEach(s=>{
+let div=document.createElement("div");
+div.className="season";
+div.innerText="Stagione "+parseInt(s);
+
+let list=document.createElement("div");
+list.style.display="none";
+
+seasons[s].forEach(ep=>{
+let row=document.createElement("div");
+row.className="episode";
+
+let check=document.createElement("input");
+check.type="checkbox";
+check.className="checkbox";
+check.checked=watched.includes(ep.name);
+
+check.onclick=(e)=>{
+e.stopPropagation();
+if(check.checked){
+watched.push(ep.name);
+}else{
+watched=watched.filter(x=>x!==ep.name);
+}
+localStorage.setItem("watched",JSON.stringify(watched));
+};
+
+let parts=ep.name.split(" - ");
+let code=parts[0];
+let ita=parts[1]||"";
+let epNum=parseInt(code.split("x")[1]);
+
+let info=document.createElement("div");
+info.innerHTML=`
+<div><span class="ep-label">🎬Ep.${epNum}</span> ${ita}</div>
+<div class="title-en">${parts[2]||""}</div>
+`;
+
+let video=document.createElement("video");
+video.src=ep.url;
+video.controls=true;
+
+row.onclick=()=>{
+if(video.style.display==="block"){
+video.style.display="none";
+video.pause();
+}else{
+video.style.display="block";
+}
+};
+
+row.appendChild(check);
+row.appendChild(info);
+row.appendChild(video);
+list.appendChild(row);
+});
+
+div.onclick=()=>{
+list.style.display=list.style.display==="none"?"block":"none";
+};
+
+container.appendChild(div);
+container.appendChild(list);
+});
+}
+
+/* PWA */
 if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("service-worker.js");
+navigator.serviceWorker.register("service-worker.js");
 }
 
 </script>
