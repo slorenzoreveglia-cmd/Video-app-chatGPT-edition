@@ -11,7 +11,7 @@
 <style>
 body{
     margin:0;
-    font-family:sans-serif;
+    font-family:system-ui;
     background:#0f2f2c;
     color:white;
 }
@@ -25,87 +25,133 @@ body{
 }
 
 .login-box{
-    background:#2c2c2c;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(20px);
     padding:40px;
-    border-radius:20px;
+    border-radius:25px;
     text-align:center;
-    width:300px;
+    width:280px;
+    box-shadow:0 0 40px rgba(0,0,0,0.4);
 }
 
 .login-box h1{
-    font-size:32px;
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size:12px;
+    opacity:0.6;
+    margin-bottom:20px;
 }
 
 input{
     width:100%;
-    padding:15px;
-    border-radius:10px;
+    padding:14px;
+    border-radius:12px;
     border:none;
-    margin-top:20px;
     text-align:center;
+    background:rgba(255,255,255,0.1);
+    color:white;
 }
 
 button{
     margin-top:15px;
-    padding:10px 20px;
+    padding:10px 18px;
     border:none;
-    border-radius:10px;
+    border-radius:12px;
     cursor:pointer;
+    background:white;
+    font-weight:bold;
 }
 
-/* MAIN */
-#app{display:none;padding:20px;}
-
-.card{
-    background:#2a7d75;
-    padding:20px;
-    border-radius:20px;
-    margin-bottom:20px;
-}
-
-.season{
-    background:#2a7d75;
-    padding:15px;
-    border-radius:15px;
-    margin-top:10px;
-    cursor:pointer;
-}
-
-.episode{
-    padding:10px;
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-}
-
-.ep-label{
-    color:gray;
-    min-width:60px;
-}
-
-.title-en{
-    font-size:12px;
-    opacity:0.5;
-}
-
-video{
-    width:100%;
-    margin-top:10px;
-    display:none;
-}
-
-.checkbox{
-    width:20px;
-    height:20px;
-}
-
+/* TROLL */
 #ciaoScreen{
     display:none;
     height:100vh;
     align-items:center;
     justify-content:center;
-    font-size:50px;
+    flex-direction:column;
+    gap:20px;
+}
+
+.troll-btn{
+    padding:12px 20px;
+    border-radius:15px;
+    background:white;
+    color:black;
+}
+
+#ciaoText{
+    font-size:60px;
+    opacity:0;
+    transition:0.3s;
+}
+
+/* APP */
+#app{display:none;padding:15px;}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.small-btn{
+    padding:6px 12px;
+    font-size:12px;
+    border-radius:20px;
+}
+
+/* CARD */
+.card{
+    background:rgba(255,255,255,0.05);
+    padding:15px;
+    border-radius:18px;
+    font-size:13px;
+    line-height:1.4;
+}
+
+/* STAGIONI */
+.season{
+    background:rgba(255,255,255,0.05);
+    padding:12px;
+    border-radius:15px;
+    margin-top:10px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+/* EPISODI */
+.episode{
+    padding:10px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.ep-label{
+    color:gray;
+    font-size:12px;
+    min-width:55px;
+}
+
+.title-en{
+    font-size:11px;
+    opacity:0.5;
+}
+
+.checkbox{
+    width:18px;
+    height:18px;
+}
+
+video{
+    width:100%;
+    margin-top:8px;
+    display:none;
+    border-radius:10px;
 }
 
 /* TEMI */
@@ -121,35 +167,34 @@ video{
 <div id="login">
     <div class="login-box">
         <h1>SU Streaming</h1>
-        <input id="pinInput" type="password" placeholder="Inserisci PIN">
+        <div class="subtitle">Immettere PIN per accedere</div>
+        <input id="pinInput" type="password">
         <button onclick="checkPin()">ACCEDI</button>
     </div>
 </div>
 
-<!-- SCHERMATA TROLL -->
+<!-- TROLL -->
 <div id="ciaoScreen">
-    <div>
-        <button onclick="showCiao()">Premi qui</button>
-        <h1 id="ciaoText" style="display:none;">CIAO</h1>
-    </div>
+    <button class="troll-btn" onclick="showCiao()">Premi qui</button>
+    <div id="ciaoText">CIAO</div>
 </div>
 
 <!-- APP -->
 <div id="app">
 
-<button onclick="changePin()">PIN</button>
-<button onclick="changeTheme()">COLORE</button>
+<div class="topbar">
+    <button class="small-btn" onclick="changePin()">PIN</button>
+    <button class="small-btn" onclick="changeTheme()">COLORE</button>
+</div>
 
 <div class="card">
-<h2>Steven Universe: The Complete Collection ✨</h2>
-<p>
+<b>Steven Universe: The Complete Collection ✨</b><br><br>
 Questa web app nasce dal desiderio di raccogliere in un unico posto l'intero universo creato da Rebecca Sugar.<br><br>
 💎 Tutte le stagioni della serie originale<br>
 🎬 Steven Universe: Il Film<br>
 🌟 Steven Universe Future<br><br>
 Nota dello sviluppatore: primo progetto, in continuo miglioramento.<br>
 Sviluppato con passione da Lorenzo Reveglia.
-</p>
 </div>
 
 <div id="seasons"></div>
@@ -158,7 +203,7 @@ Sviluppato con passione da Lorenzo Reveglia.
 
 <script>
 
-/* DATABASE (incolla qui il tuo completo) */
+/* DATABASE */
 const DATABASE_VIDEO = [
             // ============================================
             // INCOLLA QUI IL TUO DATABASE DATI COMPLETO
@@ -355,8 +400,8 @@ if(input===pin){
 /* CIAO */
 function showCiao(){
 let el=document.getElementById("ciaoText");
-el.style.display="block";
-setTimeout(()=>el.style.display="none",2000);
+el.style.opacity="1";
+setTimeout(()=>el.style.opacity="0",2000);
 }
 
 /* PIN */
@@ -429,12 +474,7 @@ video.src=ep.url;
 video.controls=true;
 
 row.onclick=()=>{
-if(video.style.display==="block"){
-video.style.display="none";
-video.pause();
-}else{
-video.style.display="block";
-}
+video.style.display = video.style.display==="block"?"none":"block";
 };
 
 row.appendChild(check);
