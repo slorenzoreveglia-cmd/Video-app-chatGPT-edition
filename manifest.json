@@ -3,9 +3,8 @@
   "short_name": "SU",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#1a1a1a",
-
+  "background_color": "#0f2f2c",
+  "theme_color": "#0f2f2c",
   "icons": [
     {
       "src": "https://res.cloudinary.com/dcsvok2jp/image/upload/v1773007380/Logo_2_nmufb2.jpg",
